@@ -1,2 +1,2 @@
 # ServerlessBlog
-Serverless Blog with AWSA
+Serverless Blog with AWS
