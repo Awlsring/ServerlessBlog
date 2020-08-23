@@ -1,0 +1,31 @@
+/*!
+ * Start Bootstrap - Scrolling Nav (https://startbootstrap.com/templates/scrolling-nav)
+ * Copyright 2013-2020 Start Bootstrap
+ * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-scrolling-nav/blob/master/LICENSE)
+ */
+header {
+  padding: 156px 0 100px;
+}
+
+section {
+  padding: 150px 0;
+}
+
+.container {
+  padding: 10px 0;
+}
+
+.bg-seattle {
+  background-image: url("https://serverless-blog-files-bucket.s3-us-west-2.amazonaws.com/img/seattlesunset.jpg");
+  background-size: auto;
+  background-position: center;
+  background-color: #ff9999;
+}
+
+.bg-lightdark {
+  background-color: #1a0008;
+}
+
+.bg-black {
+  background-color: #000000;
+}
