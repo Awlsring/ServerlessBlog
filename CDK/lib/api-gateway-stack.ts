@@ -2,6 +2,7 @@ import * as cdk from '@aws-cdk/core';
 import * as api from '@aws-cdk/aws-apigateway';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as iam from '@aws-cdk/aws-iam';
+import { Duration } from '@aws-cdk/core';
 
 export class apiGatewayStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -24,6 +25,7 @@ export class apiGatewayStack extends cdk.Stack {
       handler: 'main_page.lambda_handler',
       code: lambda.Code.fromAsset('../PythonLambda/Handlers'),
       tracing: lambda.Tracing.ACTIVE,
+      timeout: Duration.seconds(5),
       functionName: 'Get-MainPage',
       role: new iam.Role(this, 'get-MainPageRole', {
           assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),

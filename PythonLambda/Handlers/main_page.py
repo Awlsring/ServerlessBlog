@@ -1,6 +1,6 @@
 import boto3
 from jinja2 import Environment, FileSystemLoader, Template
-import datetime
+from datetime import datetime
 
 def lambda_handler(event, context):
     '''
@@ -43,7 +43,8 @@ def lambda_handler(event, context):
     
     # Changes time from epoch to formatted datetime
     for post in postList:
-        post['Time'] = datetime.datetime.fromtimestamp(post['Time']).strftime("%d-%m-%Y at %I:%M:")
+        post['Time'] = post['Time'] - 25200
+        post['Time'] = datetime.fromtimestamp(post['Time']).strftime("%m-%d-%Y at %I:%M PT")
 
     # Renders page
     page = template.render(posts=postList)
