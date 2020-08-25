@@ -1,6 +1,6 @@
 # CDK
 
-Before working with this project, you will need to get install CDK. Follow this doc to get started: https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html
+Before working with this project, you will need to get install CDK. [Follow this doc to get started.](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html)
 
 ## Stacks
 
@@ -19,11 +19,9 @@ Generates  the S3 bucket the webfiles are kept in, and deploys them to S3.
 
 After your clone this repo and have CDK CLI configured, navigate to ServerlessBlog/CDK.
 
-- Run command `npm run build` to generate js from the typescript files.
+- Run command `npm run build` to generate js from the typescript files. Rerun this before deploying if changes have been made to your stacks.
 - Run `cdk deploy *` to deploy all the stacks. This will require you to respond to prompts from CDK.
 - After all these have run, in your terminal you should see the output of Api Gateway address. Visit that to see if it worked.
-
-
 
 ### Other CDK commands
 

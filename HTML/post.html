@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+        <div class="text-light container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto border">
+
+                    <h1>{{ post.Title }}</h1>
+                    <p>On {{ post.Time }}</p>
+                    <p>{{ post.Content }}</p>
+
+                </div>
+            </div>
+        </div>
+        
+{% endblock content %}

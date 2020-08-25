@@ -30,3 +30,23 @@ section {
 .bg-black {
   background-color: #000000;
 }
+
+ /* unvisited link */
+ a:link {
+color: #bfbfbf;
+}
+
+/* visited link */
+a:visited {
+color: #bfbfbf;
+}
+
+/* mouse over link */
+a:hover {
+color: #ffffff;
+}
+
+/* selected link */
+a:active {
+color: #f2f2f2;
+} 

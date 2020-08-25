@@ -24,6 +24,7 @@ export class apiGatewayStack extends cdk.Stack {
       layers: [ jinjaLayer ],
       handler: 'main_page.lambda_handler',
       code: lambda.Code.fromAsset('../PythonLambda/Handlers'),
+      memorySize: 512,
       tracing: lambda.Tracing.ACTIVE,
       timeout: Duration.seconds(5),
       functionName: 'Get-MainPage',
@@ -33,8 +34,52 @@ export class apiGatewayStack extends cdk.Stack {
       })
     });
 
-    // Allows function to access bucket made in S3 Stack
+    // Allows function to access bucket made in S3 Stack and Table made in Dynamo Stack
     mainHandler.addToRolePolicy(new iam.PolicyStatement( {
+      resources: [ 'arn:aws:s3:::serverless-blog-files-bucket', 'arn:aws:s3:::serverless-blog-files-bucket/*', 'arn:aws:dynamodb:us-west-2:742762521158:table/ServerlessBlog-Posts' ],
+      actions: [ 's3:GetObject', 's3:PutObject', 'dynamodb:Describe*', 'dynamodb:List*', 'dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan']
+    }));
+
+    // Creates Post Page Function
+    const postHandler = new lambda.Function(this, 'Post', {
+      runtime: lambda.Runtime.PYTHON_3_8,
+      layers: [ jinjaLayer ],
+      handler: 'post.lambda_handler',
+      memorySize: 512,
+      code: lambda.Code.fromAsset('../PythonLambda/Handlers'),
+      tracing: lambda.Tracing.ACTIVE,
+      timeout: Duration.seconds(5),
+      functionName: 'Get-Post',
+      role: new iam.Role(this, 'get-PostRole', {
+          assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+          roleName: 'Lambda-Get-Post-Role'
+      })
+    });
+
+    // Allows function to access bucket made in S3 Stack and Table made in Dynamo Stack
+    postHandler.addToRolePolicy(new iam.PolicyStatement( {
+      resources: [ 'arn:aws:s3:::serverless-blog-files-bucket', 'arn:aws:s3:::serverless-blog-files-bucket/*', 'arn:aws:dynamodb:us-west-2:742762521158:table/ServerlessBlog-Posts' ],
+      actions: [ 's3:GetObject', 's3:PutObject', 'dynamodb:Describe*', 'dynamodb:List*', 'dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan']
+    }));
+
+    // Creates Post Page Function
+    const queryHandler = new lambda.Function(this, 'Query', {
+      runtime: lambda.Runtime.PYTHON_3_8,
+      layers: [ jinjaLayer ],
+      handler: 'query.lambda_handler',
+      code: lambda.Code.fromAsset('../PythonLambda/Handlers'),
+      memorySize: 512,
+      tracing: lambda.Tracing.ACTIVE,
+      timeout: Duration.seconds(5),
+      functionName: 'Get-Query',
+      role: new iam.Role(this, 'get-QueryRole', {
+          assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+          roleName: 'Lambda-Get-Query-Role'
+      })
+    });
+
+    // Allows function to access bucket made in S3 Stack and Table made in Dynamo Stack
+    queryHandler.addToRolePolicy(new iam.PolicyStatement( {
       resources: [ 'arn:aws:s3:::serverless-blog-files-bucket', 'arn:aws:s3:::serverless-blog-files-bucket/*', 'arn:aws:dynamodb:us-west-2:742762521158:table/ServerlessBlog-Posts' ],
       actions: [ 's3:GetObject', 's3:PutObject', 'dynamodb:Describe*', 'dynamodb:List*', 'dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan']
     }));
@@ -61,6 +106,60 @@ export class apiGatewayStack extends cdk.Stack {
         responseParameters: {
           "method.response.header.Content-Type": true
         }
+      }]
+    });
+
+    // Creates resource for posts
+    const post = website.root.addResource('posts');
+
+    post.addMethod('Get', new api.LambdaIntegration(postHandler, {
+      proxy: false,
+      passthroughBehavior: api.PassthroughBehavior.NEVER,
+      requestTemplates: {
+          'application/json': `{ "PostID": "$input.params('post')" }`,
+      },
+      integrationResponses: [{
+        statusCode: '200',
+        responseTemplates: {
+          'text/html': "$input.path('$')"
+        },
+        responseParameters: {
+          "method.response.header.Content-Type": "'text/html'"
+        }
+      }]
+    }),{
+      methodResponses: [{
+        statusCode: '200',
+        responseParameters: {
+          "method.response.header.Content-Type": true
+        }
+      }]
+    });
+
+    const query = post.addResource('query');
+
+    query.addMethod('Get', new api.LambdaIntegration(queryHandler, {
+      proxy: false,
+      passthroughBehavior: api.PassthroughBehavior.NEVER,
+      requestTemplates: {
+          'application/json': `{ "ListNumber": "$input.params('listnumber')" }`,
+      },
+      integrationResponses: [{
+          statusCode: '200',
+          responseParameters: {
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+            'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,GET'",
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+          },
+      }]}), {
+      methodResponses: [{ 
+          statusCode: '200',
+          responseParameters: {
+            'method.response.header.Access-Control-Allow-Headers': true,
+            'method.response.header.Access-Control-Allow-Methods': true,
+            'method.response.header.Access-Control-Allow-Credentials': true,
+            'method.response.header.Access-Control-Allow-Origin': true,
+        },
       }]
     });
   }

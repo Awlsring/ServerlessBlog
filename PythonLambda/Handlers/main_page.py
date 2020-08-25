@@ -28,23 +28,35 @@ def lambda_handler(event, context):
     # Creates Jinja template from home.html
     template = env.get_template('home.html')
 
-    # Scan table for entries
-    postScan = table.scan()
+    # # Scan table for entries
+    # postScan = table.scan()
 
-    # Checks if post count is over limit
-    if postScan['Count'] > 10:
-        i = 0
-        postList = []
-        while i > 10:
-            postList.append(postScan[i])
-            i = i + 1
-    else:
-        postList = postScan['Items']
+    # # Checks if post count is over limit
+    # if postScan['Count'] > 10:
+    #     i = 0
+    #     postList = []
+    #     while i > 10:
+    #         postList.append(postScan[i])
+    #         i = i + 1
+    # else:
+    #     postList = postScan['Items']
     
-    # Changes time from epoch to formatted datetime
-    for post in postList:
-        post['Time'] = post['Time'] - 25200
-        post['Time'] = datetime.fromtimestamp(post['Time']).strftime("%m-%d-%Y at %I:%M PT")
+    # # Changes time from epoch to formatted datetime and adds post URL
+    # for post in postList:
+    #     post['Time'] = post['Time'] - 25200
+    #     post['Time'] = datetime.fromtimestamp(post['Time']).strftime("%m-%d-%Y at %I:%M PT")
+    #     post['Url'] = f'https://b5y9tmytqj.execute-api.us-west-2.amazonaws.com/prod/posts?post={post["PostID"]}'
+
+    # Determine Amount of posts on page
+    if table.item_count < 10:
+        loop_amount = table.item_count
+
+    # create post positions
+    i = 0
+    postList = []
+    while i < loop_amount:
+        postList.append(i)
+        i = i + 1
 
     # Renders page
     page = template.render(posts=postList)
