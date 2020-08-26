@@ -9,7 +9,12 @@ export class dynamoStack extends cdk.Stack {
             partitionKey: { name: 'PostID', type: dynamo.AttributeType.NUMBER },
             sortKey: {name: 'Time', type: dynamo.AttributeType.NUMBER},
             tableName: "ServerlessBlog-Posts",
-          });
+        });
+
+        const countTable = new dynamo.Table(this, "ServerlessBlog-CountTotal", {
+            partitionKey: { name: 'Index', type: dynamo.AttributeType.STRING },
+            tableName: "ServerlessBlog-CountTotal",
+        });
 
     }
 }

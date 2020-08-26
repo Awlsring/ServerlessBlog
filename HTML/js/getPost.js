@@ -11,7 +11,16 @@ function getPost(position) {
     .then(function(data) {
 
         postDate.innerHTML = "On " + data.Time;
-        postContent.innerHTML = data.Content;
+
+        if (data.Content.length > 2000) {
+            var contentPreview = data.Content.substring(0,2000);
+            postContent.innerHTML = contentPreview + "<a href=" + postUrl + data.PostID + ">...read more</a>";
+        } else if (data.Content.includes("<img")) {
+            var contentPreview2 = data.Content.split("\">", 1)
+            postContent.innerHTML = contentPreview2 + "\">" + "<p><a href=" + postUrl + data.PostID + ">...read more</a></p>"
+        } else {            
+            postContent.innerHTML = data.Content;
+        }
         postTitle.innerHTML = "<a href=" + postUrl + data.PostID + ">" +  data.Title + "</a>";
 
     })

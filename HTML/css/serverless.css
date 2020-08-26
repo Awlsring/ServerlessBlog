@@ -34,19 +34,29 @@ section {
  /* unvisited link */
  a:link {
 color: #bfbfbf;
+text-decoration: none;
 }
 
 /* visited link */
 a:visited {
 color: #bfbfbf;
+text-decoration: none;
 }
 
 /* mouse over link */
 a:hover {
 color: #ffffff;
+text-decoration: none;
 }
 
 /* selected link */
 a:active {
 color: #f2f2f2;
-} 
+text-decoration: none;
+}
+
+.post-image img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}

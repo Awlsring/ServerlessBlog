@@ -18,19 +18,24 @@ def lambda_handler(event, context):
 
     # Creates resource for Posts table
     dynamo = boto3.resource('dynamodb')
-    table = dynamo.Table('ServerlessBlog-Posts')
+    posts = dynamo.Table('ServerlessBlog-Posts')
+    count = dynamo.Table('ServerlessBlog-CountTotal')
+
+    count_total = count.query(
+        KeyConditionExpression=Key('Index').eq('Index'),
+    )
 
     # Determine post to grab
-    index = ( table.item_count - list_number )
+    index = ( count_total["Items"][0]['Count'] - list_number )
 
     # Query table
-    response = table.query(
+    response = posts.query(
         KeyConditionExpression=Key('PostID').eq(index),
     )
 
     # Formats post
     wantedPost = response['Items'][0]
     wantedPost['Time'] = wantedPost['Time'] - 25200
-    wantedPost['Time'] = datetime.fromtimestamp(wantedPost['Time']).strftime("%m-%d-%Y at %I:%M PT")
+    wantedPost['Time'] = datetime.fromtimestamp(wantedPost['Time']).strftime("%m-%d-%Y at %H:%M Pacific")
 
     return wantedPost

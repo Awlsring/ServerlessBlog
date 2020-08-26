@@ -18,51 +18,7 @@ export class apiGatewayStack extends cdk.Stack {
       layerVersionName: "Jinja2"
     })
 
-    // Creates Main Homepage Function
-    const mainHandler = new lambda.Function(this, 'MainPage', {
-      runtime: lambda.Runtime.PYTHON_3_8,
-      layers: [ jinjaLayer ],
-      handler: 'main_page.lambda_handler',
-      code: lambda.Code.fromAsset('../PythonLambda/Handlers'),
-      memorySize: 512,
-      tracing: lambda.Tracing.ACTIVE,
-      timeout: Duration.seconds(5),
-      functionName: 'Get-MainPage',
-      role: new iam.Role(this, 'get-MainPageRole', {
-          assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-          roleName: 'Lambda-Get-MainPage-Role'
-      })
-    });
-
-    // Allows function to access bucket made in S3 Stack and Table made in Dynamo Stack
-    mainHandler.addToRolePolicy(new iam.PolicyStatement( {
-      resources: [ 'arn:aws:s3:::serverless-blog-files-bucket', 'arn:aws:s3:::serverless-blog-files-bucket/*', 'arn:aws:dynamodb:us-west-2:742762521158:table/ServerlessBlog-Posts' ],
-      actions: [ 's3:GetObject', 's3:PutObject', 'dynamodb:Describe*', 'dynamodb:List*', 'dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan']
-    }));
-
-    // Creates Post Page Function
-    const postHandler = new lambda.Function(this, 'Post', {
-      runtime: lambda.Runtime.PYTHON_3_8,
-      layers: [ jinjaLayer ],
-      handler: 'post.lambda_handler',
-      memorySize: 512,
-      code: lambda.Code.fromAsset('../PythonLambda/Handlers'),
-      tracing: lambda.Tracing.ACTIVE,
-      timeout: Duration.seconds(5),
-      functionName: 'Get-Post',
-      role: new iam.Role(this, 'get-PostRole', {
-          assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-          roleName: 'Lambda-Get-Post-Role'
-      })
-    });
-
-    // Allows function to access bucket made in S3 Stack and Table made in Dynamo Stack
-    postHandler.addToRolePolicy(new iam.PolicyStatement( {
-      resources: [ 'arn:aws:s3:::serverless-blog-files-bucket', 'arn:aws:s3:::serverless-blog-files-bucket/*', 'arn:aws:dynamodb:us-west-2:742762521158:table/ServerlessBlog-Posts' ],
-      actions: [ 's3:GetObject', 's3:PutObject', 'dynamodb:Describe*', 'dynamodb:List*', 'dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan']
-    }));
-
-    // Creates Post Page Function
+    // Creates Query Page Function
     const queryHandler = new lambda.Function(this, 'Query', {
       runtime: lambda.Runtime.PYTHON_3_8,
       layers: [ jinjaLayer ],
@@ -80,7 +36,29 @@ export class apiGatewayStack extends cdk.Stack {
 
     // Allows function to access bucket made in S3 Stack and Table made in Dynamo Stack
     queryHandler.addToRolePolicy(new iam.PolicyStatement( {
-      resources: [ 'arn:aws:s3:::serverless-blog-files-bucket', 'arn:aws:s3:::serverless-blog-files-bucket/*', 'arn:aws:dynamodb:us-west-2:742762521158:table/ServerlessBlog-Posts' ],
+      resources: [ 'arn:aws:s3:::serverless-blog-files-bucket', 'arn:aws:s3:::serverless-blog-files-bucket/*', 'arn:aws:dynamodb:us-west-2:742762521158:table/ServerlessBlog-Posts', 'arn:aws:dynamodb:us-west-2:742762521158:table/ServerlessBlog-CountTotal' ],
+      actions: [ 's3:GetObject', 's3:PutObject', 'dynamodb:Describe*', 'dynamodb:List*', 'dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan']
+    }));
+
+    // Creates Generic Page Function
+    const pageHandler = new lambda.Function(this, 'Page', {
+      runtime: lambda.Runtime.PYTHON_3_8,
+      layers: [ jinjaLayer ],
+      handler: 'get_page.lambda_handler',
+      code: lambda.Code.fromAsset('../PythonLambda/Handlers'),
+      memorySize: 512,
+      tracing: lambda.Tracing.ACTIVE,
+      timeout: Duration.seconds(5),
+      functionName: 'Get-Page',
+      role: new iam.Role(this, 'get-PageRole', {
+          assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+          roleName: 'Lambda-Get-Page-Role'
+      })
+    });
+
+    // Allows function to access bucket made in S3 Stack and Table made in Dynamo Stack
+    pageHandler.addToRolePolicy(new iam.PolicyStatement( {
+      resources: [ 'arn:aws:s3:::serverless-blog-files-bucket', 'arn:aws:s3:::serverless-blog-files-bucket/*', 'arn:aws:dynamodb:us-west-2:742762521158:table/ServerlessBlog-Posts', 'arn:aws:dynamodb:us-west-2:742762521158:table/ServerlessBlog-CountTotal' ],
       actions: [ 's3:GetObject', 's3:PutObject', 'dynamodb:Describe*', 'dynamodb:List*', 'dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:Scan']
     }));
 
@@ -89,8 +67,11 @@ export class apiGatewayStack extends cdk.Stack {
     const website = new api.RestApi(this, "WebsiteGateway");
 
     // Creates Get Method to call Lambda Function that assembles and returns the web page
-    website.root.addMethod('Get', new api.LambdaIntegration(mainHandler, {
+    website.root.addMethod('Get', new api.LambdaIntegration(pageHandler, {
       proxy: false,
+      requestTemplates: {
+        'application/json': `{ "Page": "home.html" }`,
+      },
       integrationResponses: [{
         statusCode: '200',
         responseTemplates: {
@@ -112,11 +93,14 @@ export class apiGatewayStack extends cdk.Stack {
     // Creates resource for posts
     const post = website.root.addResource('posts');
 
-    post.addMethod('Get', new api.LambdaIntegration(postHandler, {
+    post.addMethod('Get', new api.LambdaIntegration(pageHandler, {
       proxy: false,
       passthroughBehavior: api.PassthroughBehavior.NEVER,
       requestTemplates: {
-          'application/json': `{ "PostID": "$input.params('post')" }`,
+          'application/json': `{ 
+            "PostID": "$input.params('post')",
+            "Page": "post.html"
+          }`,
       },
       integrationResponses: [{
         statusCode: '200',
@@ -162,5 +146,6 @@ export class apiGatewayStack extends cdk.Stack {
         },
       }]
     });
+
   }
 }

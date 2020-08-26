@@ -1,3 +1,5 @@
+<!-- GetPost Javascript-->
+<script src=https://serverless-blog-files-bucket.s3-us-west-2.amazonaws.com/js/getPost.js></script>
 {% extends "layout.html" %}
 
 {% block header %}
@@ -11,15 +13,15 @@
 
 {% block content %}
 
-    {% for post in posts %}
+    {% for post in dict %}
 
         <div class="text-light container">
             <div class="row">
-                <div class="col-lg-8 mx-auto border">
+                <div class="col-lg-11 mx-auto border">
 
-                    <h1 id="post-title{{ post }}"><a id="post-link"></a></h1>
-                    <p id="post-date{{ post }}"></p>
-                    <p id="post-content{{ post }}"></p>
+                    <h1 id="post-title{{ post }}">Loading...</h1>
+                    <p id="post-date{{ post }}">Loading...</p>
+                    <p id="post-content{{ post }}">Loading...</p>
 
                 </div>
             </div>
